@@ -1,0 +1,5 @@
+*.pdf
+dist/
+build/
+*.exe
+__pycache__/
