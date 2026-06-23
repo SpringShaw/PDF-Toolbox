@@ -146,6 +146,10 @@ async function mergePdfs() {
         return;
     }
     
+    const btn = document.getElementById('mergeBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
     try {
         const merged = await PDFDocument.create();
         
@@ -158,9 +162,12 @@ async function mergePdfs() {
         
         const pdfBytes = await merged.save();
         downloadPdf(pdfBytes, 'merged.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('mergeBtn');
     }
 }
 
@@ -170,6 +177,10 @@ async function splitPdf() {
         showToast(t('selectFile'), 'error');
         return;
     }
+    
+    const btn = document.getElementById('splitBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
     
     try {
         const bytes = await readFile(file);
@@ -212,9 +223,12 @@ async function splitPdf() {
             }
         }
         
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('splitBtn');
     }
 }
 
@@ -230,6 +244,10 @@ async function extractPages() {
         showToast(t('invalidPages'), 'error');
         return;
     }
+    
+    const btn = document.getElementById('extractBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
     
     try {
         const bytes = await readFile(file);
@@ -248,9 +266,12 @@ async function extractPages() {
         
         const pdfBytes = await newDoc.save();
         downloadPdf(pdfBytes, 'extracted.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('extractBtn');
     }
 }
 
@@ -260,6 +281,10 @@ async function rotatePages() {
         showToast(t('selectFile'), 'error');
         return;
     }
+    
+    const btn = document.getElementById('rotateBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
     
     try {
         const bytes = await readFile(file);
@@ -277,9 +302,12 @@ async function rotatePages() {
         
         const pdfBytes = await doc.save();
         downloadPdf(pdfBytes, 'rotated.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('rotateBtn');
     }
 }
 
@@ -308,15 +336,22 @@ async function encryptPdf() {
         return;
     }
     
+    const btn = document.getElementById('encryptBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
     try {
         const bytes = await readFile(file);
         const doc = await PDFDocument.load(bytes);
         
         const pdfBytes = await doc.save();
         downloadPdf(pdfBytes, 'encrypted.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('encryptBtn');
     }
 }
 
@@ -334,15 +369,22 @@ async function decryptPdf() {
         return;
     }
     
+    const btn = document.getElementById('decryptBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
     try {
         const bytes = await readFile(file);
         const doc = await PDFDocument.load(bytes);
         
         const pdfBytes = await doc.save();
         downloadPdf(pdfBytes, 'decrypted.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('decryptBtn');
     }
 }
 
