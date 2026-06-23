@@ -46,6 +46,13 @@ function setupUpload(inputId, containerId, multiple = false) {
     const input = document.getElementById(inputId);
     const container = document.getElementById(containerId);
     
+    container.addEventListener('click', (e) => {
+        if (e.target.tagName === 'LABEL') {
+            e.preventDefault();
+        }
+        input.click();
+    });
+    
     container.addEventListener('dragover', (e) => {
         e.preventDefault();
         container.classList.add('dragover');
@@ -358,25 +365,64 @@ async function addWatermark() {
         
         const font = await doc.embedFont('Helvetica');
         
-        for (const pageNum of pages) {
-            const page = doc.getPage(pageNum - 1);
-            const { width, height } = page.getSize();
+        const hasChinese = /[\u4e00-\u9fa5]/.test(text);
+        
+        if (hasChinese) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            const textWidth = font.widthOfTextAtSize(text, fontSize);
-            const textHeight = font.heightAtSize(fontSize);
-            
-            const x = (width - textWidth) / 2;
-            const y = (height - textHeight) / 2;
-            
-            page.drawText(text, {
-                x,
-                y,
-                size: fontSize,
-                font,
-                color: rgb(0.8, 0.8, 0.8),
-                rotate: angle,
-                opacity: 0.5
-            });
+            for (const pageNum of pages) {
+                const page = doc.getPage(pageNum - 1);
+                const { width, height } = page.getSize();
+                
+                canvas.width = width * 2;
+                canvas.height = height * 2;
+                ctx.scale(2, 2);
+                
+                ctx.clearRect(0, 0, width, height);
+                ctx.save();
+                ctx.translate(width / 2, height / 2);
+                ctx.rotate(-angle * Math.PI / 180);
+                ctx.font = `${fontSize}px SimSun, Microsoft YaHei, sans-serif`;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 0, 0);
+                ctx.restore();
+                
+                const dataUrl = canvas.toDataURL('image/png');
+                const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
+                const img = await doc.embedPng(imgBytes);
+                
+                page.drawImage(img, {
+                    x: 0,
+                    y: 0,
+                    width: width,
+                    height: height,
+                    opacity: 0.3
+                });
+            }
+        } else {
+            for (const pageNum of pages) {
+                const page = doc.getPage(pageNum - 1);
+                const { width, height } = page.getSize();
+                
+                const textWidth = font.widthOfTextAtSize(text, fontSize);
+                const textHeight = font.heightAtSize(fontSize);
+                
+                const x = (width - textWidth) / 2;
+                const y = (height - textHeight) / 2;
+                
+                page.drawText(text, {
+                    x,
+                    y,
+                    size: fontSize,
+                    font,
+                    color: rgb(0.8, 0.8, 0.8),
+                    rotate: angle,
+                    opacity: 0.5
+                });
+            }
         }
         
         const pdfBytes = await doc.save();
