@@ -1,6 +1,7 @@
 const { PDFDocument } = PDFLib;
 
 let currentFiles = {};
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 function showToast(msg, type = 'success') {
     const toast = document.getElementById('toast');
@@ -14,6 +15,12 @@ function formatSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 function parsePages(str, total) {
@@ -65,7 +72,9 @@ function setupUpload(inputId, containerId, multiple = false) {
     container.addEventListener('drop', (e) => {
         e.preventDefault();
         container.classList.remove('dragover');
-        const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.pdf'));
+        const files = Array.from(e.dataTransfer.files).filter(f => 
+            f.name.toLowerCase().endsWith('.pdf') && f.type === 'application/pdf'
+        );
         if (files.length) handleFiles(inputId, files, multiple);
     });
     
@@ -79,18 +88,40 @@ function setupUpload(inputId, containerId, multiple = false) {
 function handleFiles(inputId, files, multiple) {
     const key = inputId.replace('Files', '').replace('File', '');
     
+    const oversized = files.find(f => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+        showToast(t('fileTooLarge'), 'error');
+        return;
+    }
+    
     if (multiple) {
         currentFiles[key] = files;
         const listId = key + 'FileList';
         const list = document.getElementById(listId);
         if (list) {
-            list.innerHTML = files.map((f, i) => `
-                <div class="file-item">
-                    <span class="file-name">${f.name}</span>
-                    <span class="file-size">${formatSize(f.size)}</span>
-                    <button class="remove-btn" onclick="removeFile('${key}', ${i})">×</button>
-                </div>
-            `).join('');
+            list.innerHTML = '';
+            files.forEach((f, i) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'file-name';
+                nameSpan.textContent = f.name;
+                
+                const sizeSpan = document.createElement('span');
+                sizeSpan.className = 'file-size';
+                sizeSpan.textContent = formatSize(f.size);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = () => removeFile(key, i);
+                
+                item.appendChild(nameSpan);
+                item.appendChild(sizeSpan);
+                item.appendChild(removeBtn);
+                list.appendChild(item);
+            });
         }
         updateBtn(key, true);
     } else {
@@ -164,7 +195,8 @@ async function mergePdfs() {
         downloadPdf(pdfBytes, 'merged.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Merge error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('mergeBtn');
@@ -225,7 +257,8 @@ async function splitPdf() {
         
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Split error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('splitBtn');
@@ -268,7 +301,8 @@ async function extractPages() {
         downloadPdf(pdfBytes, 'extracted.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Extract error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('extractBtn');
@@ -304,7 +338,8 @@ async function rotatePages() {
         downloadPdf(pdfBytes, 'rotated.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Rotate error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('rotateBtn');
@@ -348,7 +383,8 @@ async function encryptPdf() {
         downloadPdf(pdfBytes, 'encrypted.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Encrypt error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('encryptBtn');
@@ -381,7 +417,8 @@ async function decryptPdf() {
         downloadPdf(pdfBytes, 'decrypted.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Decrypt error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('decryptBtn');
@@ -404,8 +441,13 @@ async function addWatermark() {
         const doc = await PDFDocument.load(bytes);
         const total = doc.getPageCount();
         const text = document.getElementById('watermarkText').value || '机密';
-        const fontSize = parseInt(document.getElementById('watermarkSize').value) || 48;
-        const angle = parseInt(document.getElementById('watermarkAngle').value) || 45;
+        
+        let fontSize = parseInt(document.getElementById('watermarkSize').value) || 48;
+        fontSize = Math.max(10, Math.min(200, fontSize));
+        
+        let angle = parseInt(document.getElementById('watermarkAngle').value) || 45;
+        angle = Math.max(0, Math.min(360, angle));
+        
         const pagesStr = document.getElementById('watermarkPages').value;
         const pages = parsePages(pagesStr, total);
         
@@ -475,7 +517,8 @@ async function addWatermark() {
         downloadPdf(pdfBytes, 'watermarked.pdf');
         showToast(t('downloadDone'));
     } catch (e) {
-        showToast(t('error') + e.message, 'error');
+        console.error('Watermark error:', e);
+        showToast(t('operationFailed'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = t('watermarkBtn');

@@ -51,7 +51,9 @@ const translations = {
         fileSelected: '已选择文件',
         processing: '处理中...',
         done: '完成！',
-        downloadDone: '下载完成！'
+        downloadDone: '下载完成！',
+        fileTooLarge: '文件过大，超过100MB限制',
+        operationFailed: '操作失败，请重试'
     },
     en: {
         title: 'PDF Toolbox',
@@ -105,7 +107,9 @@ const translations = {
         fileSelected: 'File selected',
         processing: 'Processing...',
         done: 'Done!',
-        downloadDone: 'Download complete!'
+        downloadDone: 'Download complete!',
+        fileTooLarge: 'File too large, exceeds 100MB limit',
+        operationFailed: 'Operation failed, please try again'
     }
 };
 
