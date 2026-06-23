@@ -353,6 +353,10 @@ async function addWatermark() {
         return;
     }
     
+    const btn = document.getElementById('watermarkBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
     try {
         const bytes = await readFile(file);
         const doc = await PDFDocument.load(bytes);
@@ -364,7 +368,6 @@ async function addWatermark() {
         const pages = parsePages(pagesStr, total);
         
         const font = await doc.embedFont('Helvetica');
-        
         const hasChinese = /[\u4e00-\u9fa5]/.test(text);
         
         if (hasChinese) {
@@ -378,28 +381,32 @@ async function addWatermark() {
                 canvas.width = width * 2;
                 canvas.height = height * 2;
                 ctx.scale(2, 2);
-                
                 ctx.clearRect(0, 0, width, height);
-                ctx.save();
-                ctx.translate(width / 2, height / 2);
-                ctx.rotate(-angle * Math.PI / 180);
+                
                 ctx.font = `${fontSize}px SimSun, Microsoft YaHei, sans-serif`;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(text, 0, 0);
-                ctx.restore();
+                
+                const xSpacing = width * 0.4;
+                const ySpacing = height * 0.4;
+                
+                for (let x = -width * 0.5; x <= width * 1.5; x += xSpacing) {
+                    for (let y = -height * 0.5; y <= height * 1.5; y += ySpacing) {
+                        ctx.save();
+                        ctx.translate(x, y);
+                        ctx.rotate(-angle * Math.PI / 180);
+                        ctx.fillText(text, 0, 0);
+                        ctx.restore();
+                    }
+                }
                 
                 const dataUrl = canvas.toDataURL('image/png');
                 const imgBytes = Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
                 const img = await doc.embedPng(imgBytes);
                 
                 page.drawImage(img, {
-                    x: 0,
-                    y: 0,
-                    width: width,
-                    height: height,
-                    opacity: 0.3
+                    x: 0, y: 0, width: width, height: height
                 });
             }
         } else {
@@ -407,29 +414,29 @@ async function addWatermark() {
                 const page = doc.getPage(pageNum - 1);
                 const { width, height } = page.getSize();
                 
-                const textWidth = font.widthOfTextAtSize(text, fontSize);
-                const textHeight = font.heightAtSize(fontSize);
+                const xSpacing = width * 0.4;
+                const ySpacing = height * 0.4;
                 
-                const x = (width - textWidth) / 2;
-                const y = (height - textHeight) / 2;
-                
-                page.drawText(text, {
-                    x,
-                    y,
-                    size: fontSize,
-                    font,
-                    color: rgb(0.8, 0.8, 0.8),
-                    rotate: angle,
-                    opacity: 0.5
-                });
+                for (let x = -width * 0.5; x <= width * 1.5; x += xSpacing) {
+                    for (let y = -height * 0.5; y <= height * 1.5; y += ySpacing) {
+                        page.drawText(text, {
+                            x, y, size: fontSize, font,
+                            color: rgb(0.8, 0.8, 0.8),
+                            rotate: angle, opacity: 0.15
+                        });
+                    }
+                }
             }
         }
         
         const pdfBytes = await doc.save();
         downloadPdf(pdfBytes, 'watermarked.pdf');
-        showToast(t('success'));
+        showToast(t('downloadDone'));
     } catch (e) {
         showToast(t('error') + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('watermarkBtn');
     }
 }
 

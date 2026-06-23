@@ -50,7 +50,8 @@ const translations = {
         filesSelected: '已选择 {count} 个文件',
         fileSelected: '已选择文件',
         processing: '处理中...',
-        done: '完成！'
+        done: '完成！',
+        downloadDone: '下载完成！'
     },
     en: {
         title: 'PDF Toolbox',
@@ -103,7 +104,8 @@ const translations = {
         filesSelected: '{count} file(s) selected',
         fileSelected: 'File selected',
         processing: 'Processing...',
-        done: 'Done!'
+        done: 'Done!',
+        downloadDone: 'Download complete!'
     }
 };
 
