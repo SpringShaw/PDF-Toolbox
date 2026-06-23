@@ -5,25 +5,32 @@ import sys
 import subprocess
 import shutil
 
-# 尝试导入 pypdf，如果失败则提示安装
 try:
     import pypdf
 except ImportError:
+    root = tk.Tk()
+    root.withdraw()
     messagebox.showerror("依赖缺失", "缺少 pypdf 库。请先安装: pip install pypdf")
     sys.exit(1)
 
-# --- 手动指定 Ghostscript 路径 ---
-GS_COMMAND = r"C:\Program Files\gs\gs10.05.1\bin\gswin64.exe"
+def find_ghostscript():
+    gs_path = shutil.which("gswin64c") or shutil.which("gswin32c") or shutil.which("gs")
+    if gs_path:
+        return gs_path
+    default_paths = [
+        r"C:\Program Files\gs\gs10.05.1\bin\gswin64.exe",
+        r"C:\Program Files\gs\gs10.04.0\bin\gswin64.exe",
+        r"C:\Program Files (x86)\gs\gs10.05.1\bin\gswin32.exe",
+    ]
+    for path in default_paths:
+        if os.path.isfile(path):
+            return path
+    return None
 
-# 验证Ghostscript路径
-if not os.path.isfile(GS_COMMAND):
-    GS_COMMAND = False
-    print(f"[警告] 指定的Ghostscript路径不存在: {GS_COMMAND}")
-else:
-    print(f"[信息] 使用指定的Ghostscript路径: {GS_COMMAND}")
+GS_COMMAND = find_ghostscript()
 
 if not GS_COMMAND:
-    messagebox.showwarning("警告", "未找到Ghostscript可执行文件。\n请检查手动设置的路径是否正确。")
+    print("[警告] 未找到Ghostscript，压缩功能不可用")
 
 class PDFezyApp:
     def __init__(self, root):
@@ -162,10 +169,7 @@ class PDFezyApp:
             
             messagebox.showinfo("成功", f"PDF合并完成！\n保存至: {output_path}")
         except Exception as e:
-            import traceback
-            error_msg = f"合并失败: {str(e)}\n\n{traceback.format_exc()}"
-            print(error_msg)
-            messagebox.showerror("错误", f"合并失败: {e}")
+            messagebox.showerror("错误", f"合并失败，请检查文件是否有效")
 
     # 拆分Tab相关方法
     def setup_split_tab(self):
@@ -299,10 +303,7 @@ class PDFezyApp:
                     messagebox.showerror("输入错误", f"请输入有效的固定页数。\n{e}")
 
         except Exception as e:
-            import traceback
-            error_msg = f"拆分失败: {str(e)}\n\n{traceback.format_exc()}"
-            print(error_msg)
-            messagebox.showerror("错误", f"拆分失败: {e}")
+            messagebox.showerror("错误", f"拆分失败，请检查文件和参数")
 
     # 压缩Tab相关方法 (已修复)
     def setup_compress_tab(self):
@@ -382,8 +383,8 @@ class PDFezyApp:
             messagebox.showerror("错误", "Ghostscript 未找到，无法执行压缩。")
             return
 
-        input_path = self.compress_file_entry.get().strip()
-        output_path = self.compress_output_entry.get().strip()
+        input_path = os.path.normpath(self.compress_file_entry.get().strip())
+        output_path = os.path.normpath(self.compress_output_entry.get().strip())
         dpi_str = self.compress_dpi_entry.get().strip()
         quality_preset = self.compress_quality_var.get()
 
@@ -447,10 +448,7 @@ class PDFezyApp:
                 messagebox.showerror("错误", f"压缩失败: {error_msg}")
 
         except Exception as e:
-            import traceback
-            error_msg = f"压缩过程中发生异常: {str(e)}\n\n{traceback.format_exc()}"
-            print(error_msg)
-            messagebox.showerror("错误", f"压缩失败: {e}")
+            messagebox.showerror("错误", f"压缩失败，请检查文件和参数")
 
 
 if __name__ == "__main__":

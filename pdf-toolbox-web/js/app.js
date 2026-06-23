@@ -1,0 +1,425 @@
+const { PDFDocument } = PDFLib;
+
+let currentFiles = {};
+
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = `toast ${type}`;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function parsePages(str, total) {
+    if (!str.trim()) return Array.from({ length: total }, (_, i) => i + 1);
+    
+    const pages = new Set();
+    const parts = str.split(',');
+    
+    for (const part of parts) {
+        const trimmed = part.trim();
+        if (trimmed.includes('-')) {
+            const [start, end] = trimmed.split('-').map(s => parseInt(s.trim()));
+            if (!isNaN(start) && !isNaN(end)) {
+                for (let i = Math.max(1, start); i <= Math.min(total, end); i++) {
+                    pages.add(i);
+                }
+            }
+        } else {
+            const page = parseInt(trimmed);
+            if (!isNaN(page) && page >= 1 && page <= total) {
+                pages.add(page);
+            }
+        }
+    }
+    
+    return Array.from(pages).sort((a, b) => a - b);
+}
+
+function setupUpload(inputId, containerId, multiple = false) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        container.classList.add('dragover');
+    });
+    
+    container.addEventListener('dragleave', () => {
+        container.classList.remove('dragover');
+    });
+    
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        container.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.pdf'));
+        if (files.length) handleFiles(inputId, files, multiple);
+    });
+    
+    input.addEventListener('change', () => {
+        if (input.files.length) {
+            handleFiles(inputId, Array.from(input.files), multiple);
+        }
+    });
+}
+
+function handleFiles(inputId, files, multiple) {
+    const key = inputId.replace('Files', '').replace('File', '');
+    
+    if (multiple) {
+        currentFiles[key] = files;
+        const listId = key + 'FileList';
+        const list = document.getElementById(listId);
+        if (list) {
+            list.innerHTML = files.map((f, i) => `
+                <div class="file-item">
+                    <span class="file-name">${f.name}</span>
+                    <span class="file-size">${formatSize(f.size)}</span>
+                    <button class="remove-btn" onclick="removeFile('${key}', ${i})">×</button>
+                </div>
+            `).join('');
+        }
+        updateBtn(key, true);
+    } else {
+        currentFiles[key] = files[0];
+        const infoId = key + 'FileInfo';
+        const info = document.getElementById(infoId);
+        if (info) {
+            info.textContent = `${files[0].name} (${formatSize(files[0].size)})`;
+            info.style.display = 'block';
+        }
+        updateBtn(key, true);
+    }
+}
+
+function removeFile(key, index) {
+    if (currentFiles[key]) {
+        currentFiles[key].splice(index, 1);
+        if (currentFiles[key].length === 0) {
+            delete currentFiles[key];
+        }
+        handleFiles(key + 'Files', currentFiles[key] || [], true);
+    }
+}
+
+function updateBtn(key, enabled) {
+    const btn = document.getElementById(key + 'Btn');
+    if (btn) btn.disabled = !enabled;
+}
+
+async function readFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+function downloadPdf(bytes, filename) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function mergePdfs() {
+    const files = currentFiles.merge;
+    if (!files || files.length < 2) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    try {
+        const merged = await PDFDocument.create();
+        
+        for (const file of files) {
+            const bytes = await readFile(file);
+            const doc = await PDFDocument.load(bytes);
+            const pages = await merged.copyPages(doc, doc.getPageIndices());
+            pages.forEach(page => merged.addPage(page));
+        }
+        
+        const pdfBytes = await merged.save();
+        downloadPdf(pdfBytes, 'merged.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function splitPdf() {
+    const file = currentFiles.split;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const mode = document.getElementById('splitMode').value;
+        
+        if (mode === 'single') {
+            for (let i = 0; i < total; i++) {
+                const newDoc = await PDFDocument.create();
+                const [page] = await newDoc.copyPages(doc, [i]);
+                newDoc.addPage(page);
+                const pdfBytes = await newDoc.save();
+                downloadPdf(pdfBytes, `page_${i + 1}.pdf`);
+            }
+        } else {
+            const rangeStr = document.getElementById('splitRange').value;
+            const ranges = rangeStr.split(',').map(r => r.trim());
+            
+            for (let ri = 0; ri < ranges.length; ri++) {
+                const range = ranges[ri];
+                const newDoc = await PDFDocument.create();
+                
+                if (range.includes('-')) {
+                    const [start, end] = range.split('-').map(s => parseInt(s.trim()) - 1);
+                    for (let i = start; i <= end && i < total; i++) {
+                        const [page] = await newDoc.copyPages(doc, [i]);
+                        newDoc.addPage(page);
+                    }
+                } else {
+                    const pageIdx = parseInt(range) - 1;
+                    if (pageIdx >= 0 && pageIdx < total) {
+                        const [page] = await newDoc.copyPages(doc, [pageIdx]);
+                        newDoc.addPage(page);
+                    }
+                }
+                
+                const pdfBytes = await newDoc.save();
+                downloadPdf(pdfBytes, `split_${ri + 1}.pdf`);
+            }
+        }
+        
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function extractPages() {
+    const file = currentFiles.extract;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const pagesStr = document.getElementById('extractPages').value;
+    if (!pagesStr.trim()) {
+        showToast(t('invalidPages'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const pages = parsePages(pagesStr, total);
+        
+        if (pages.length === 0) {
+            showToast(t('invalidPages'), 'error');
+            return;
+        }
+        
+        const newDoc = await PDFDocument.create();
+        const copiedPages = await newDoc.copyPages(doc, pages.map(p => p - 1));
+        copiedPages.forEach(page => newDoc.addPage(page));
+        
+        const pdfBytes = await newDoc.save();
+        downloadPdf(pdfBytes, 'extracted.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function rotatePages() {
+    const file = currentFiles.rotate;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const angle = parseInt(document.getElementById('rotateAngle').value);
+        const pagesStr = document.getElementById('rotatePages').value;
+        const pages = parsePages(pagesStr, total);
+        
+        for (const pageNum of pages) {
+            const page = doc.getPage(pageNum - 1);
+            const currentRotation = page.getRotation().angle;
+            page.setRotation((currentRotation + angle) % 360);
+        }
+        
+        const pdfBytes = await doc.save();
+        downloadPdf(pdfBytes, 'rotated.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function encryptPdf() {
+    const file = currentFiles.encrypt;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const password = document.getElementById('encryptPassword').value;
+    const confirm = document.getElementById('encryptPasswordConfirm').value;
+    
+    if (!password) {
+        showToast(t('passwordRequired'), 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showToast(t('passwordMinLength'), 'error');
+        return;
+    }
+    
+    if (password !== confirm) {
+        showToast(t('passwordMismatch'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        
+        const pdfBytes = await doc.save();
+        downloadPdf(pdfBytes, 'encrypted.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function decryptPdf() {
+    const file = currentFiles.decrypt;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const password = document.getElementById('decryptPassword').value;
+    
+    if (!password) {
+        showToast(t('passwordRequired'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        
+        const pdfBytes = await doc.save();
+        downloadPdf(pdfBytes, 'decrypted.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+async function addWatermark() {
+    const file = currentFiles.watermark;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const text = document.getElementById('watermarkText').value || '机密';
+        const fontSize = parseInt(document.getElementById('watermarkSize').value) || 48;
+        const angle = parseInt(document.getElementById('watermarkAngle').value) || 45;
+        const pagesStr = document.getElementById('watermarkPages').value;
+        const pages = parsePages(pagesStr, total);
+        
+        const font = await doc.embedFont('Helvetica');
+        
+        for (const pageNum of pages) {
+            const page = doc.getPage(pageNum - 1);
+            const { width, height } = page.getSize();
+            
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            const textHeight = font.heightAtSize(fontSize);
+            
+            const x = (width - textWidth) / 2;
+            const y = (height - textHeight) / 2;
+            
+            page.drawText(text, {
+                x,
+                y,
+                size: fontSize,
+                font,
+                color: rgb(0.8, 0.8, 0.8),
+                rotate: angle,
+                opacity: 0.5
+            });
+        }
+        
+        const pdfBytes = await doc.save();
+        downloadPdf(pdfBytes, 'watermarked.pdf');
+        showToast(t('success'));
+    } catch (e) {
+        showToast(t('error') + e.message, 'error');
+    }
+}
+
+function init() {
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+    
+    setupUpload('mergeFiles', 'mergeUpload', true);
+    setupUpload('splitFile', 'splitUpload');
+    setupUpload('extractFile', 'extractUpload');
+    setupUpload('rotateFile', 'rotateUpload');
+    setupUpload('encryptFile', 'encryptUpload');
+    setupUpload('decryptFile', 'decryptUpload');
+    setupUpload('watermarkFile', 'watermarkUpload');
+    
+    document.getElementById('splitMode').addEventListener('change', (e) => {
+        document.getElementById('splitRangeGroup').classList.toggle('hidden', e.target.value !== 'range');
+    });
+    
+    document.getElementById('mergeBtn').addEventListener('click', mergePdfs);
+    document.getElementById('splitBtn').addEventListener('click', splitPdf);
+    document.getElementById('extractBtn').addEventListener('click', extractPages);
+    document.getElementById('rotateBtn').addEventListener('click', rotatePages);
+    document.getElementById('encryptBtn').addEventListener('click', encryptPdf);
+    document.getElementById('decryptBtn').addEventListener('click', decryptPdf);
+    document.getElementById('watermarkBtn').addEventListener('click', addWatermark);
+    
+    document.getElementById('langBtn').addEventListener('click', switchLang);
+    
+    applyLang();
+}
+
+document.addEventListener('DOMContentLoaded', init);
