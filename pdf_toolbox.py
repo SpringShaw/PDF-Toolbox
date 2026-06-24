@@ -26,8 +26,6 @@ TRANSLATIONS = {
         "func_split": "PDF拆分",
         "func_extract": "提取页面",
         "func_rotate": "页面旋转",
-        "func_encrypt": "PDF加密",
-        "func_decrypt": "PDF解密",
         "func_watermark": "添加文本（水印）",
         "select_pdf_files": "选择要合并的PDF文件（可多选）：",
         "no_file_selected": "未选择文件",
@@ -44,10 +42,6 @@ TRANSLATIONS = {
         "select_rotate_file": "选择要旋转的PDF文件：",
         "rotate_pages_hint": "旋转页码（如：1-3 或留空旋转所有页）：",
         "rotate_angle": "旋转角度：",
-        "select_encrypt_file": "选择要加密的PDF文件：",
-        "set_password": "设置密码：",
-        "select_decrypt_file": "选择要解密的PDF文件：",
-        "input_password": "输入密码：",
         "select_edit_file": "选择要编辑的PDF文件：",
         "watermark_text": "要添加的文本内容：",
         "watermark_default": "机密",
@@ -74,9 +68,6 @@ TRANSLATIONS = {
         "err_add_text": "添加文本失败：",
         "err_extract_pages": "请输入提取页码",
         "err_invalid_pages": "无效的页码格式",
-        "err_set_password": "请设置密码",
-        "err_password_length": "密码长度至少6位",
-        "err_input_password": "请输入密码",
         "err_invalid_color": "无效的颜色格式",
     },
     "en": {
@@ -96,8 +87,6 @@ TRANSLATIONS = {
         "func_split": "PDF Split",
         "func_extract": "Extract Pages",
         "func_rotate": "Rotate Pages",
-        "func_encrypt": "PDF Encrypt",
-        "func_decrypt": "PDF Decrypt",
         "func_watermark": "Add Text (Watermark)",
         "select_pdf_files": "Select PDF files to merge (multiple):",
         "no_file_selected": "No file selected",
@@ -114,10 +103,6 @@ TRANSLATIONS = {
         "select_rotate_file": "Select PDF file to rotate:",
         "rotate_pages_hint": "Pages to rotate (e.g. 1-3 or empty for all):",
         "rotate_angle": "Rotation angle:",
-        "select_encrypt_file": "Select PDF file to encrypt:",
-        "set_password": "Set password:",
-        "select_decrypt_file": "Select PDF file to decrypt:",
-        "input_password": "Enter password:",
         "select_edit_file": "Select PDF file to edit:",
         "watermark_text": "Text to add:",
         "watermark_default": "CONFIDENTIAL",
@@ -144,9 +129,6 @@ TRANSLATIONS = {
         "err_add_text": "Failed to add text: ",
         "err_extract_pages": "Please enter pages to extract",
         "err_invalid_pages": "Invalid page format",
-        "err_set_password": "Please set a password",
-        "err_password_length": "Password must be at least 6 characters",
-        "err_input_password": "Please enter password",
         "err_invalid_color": "Invalid color format",
     }
 }
@@ -211,7 +193,7 @@ class PDFToolbox:
         
         self.functions_keys = [
             "func_merge", "func_split", "func_extract", 
-            "func_rotate", "func_encrypt", "func_decrypt", "func_watermark"
+            "func_rotate", "func_watermark"
         ]
         self.function_var = tk.StringVar(value=t(self.functions_keys[0]))
         self.function_combo = ttk.Combobox(
@@ -279,10 +261,6 @@ class PDFToolbox:
             self.create_extract_ui()
         elif func_key == "func_rotate":
             self.create_rotate_ui()
-        elif func_key == "func_encrypt":
-            self.create_encrypt_ui()
-        elif func_key == "func_decrypt":
-            self.create_decrypt_ui()
         elif func_key == "func_watermark":
             self.create_add_text_ui()
     
@@ -395,36 +373,6 @@ class PDFToolbox:
         ttk.Entry(self.frame, textvariable=self.rotate_output_var, width=50).pack(anchor="w", pady=2)
         ttk.Button(self.frame, text=t("select_save_location"), command=lambda: self.select_output_path("rotate")).pack(anchor="w", pady=5)
     
-    def create_encrypt_ui(self):
-        ttk.Label(self.frame, text=t("select_encrypt_file")).pack(anchor="w", pady=5)
-        self.encrypt_file_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.encrypt_file_var, width=50).pack(anchor="w", pady=2)
-        ttk.Button(self.frame, text=t("select_file"), command=lambda: self.select_single_file("encrypt")).pack(anchor="w", pady=5)
-        
-        ttk.Label(self.frame, text=t("set_password")).pack(anchor="w", pady=5)
-        self.encrypt_password_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.encrypt_password_var, show="*", width=50).pack(anchor="w", pady=2)
-        
-        ttk.Label(self.frame, text=t("output_path")).pack(anchor="w", pady=5)
-        self.encrypt_output_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.encrypt_output_var, width=50).pack(anchor="w", pady=2)
-        ttk.Button(self.frame, text=t("select_save_location"), command=lambda: self.select_output_path("encrypt")).pack(anchor="w", pady=5)
-    
-    def create_decrypt_ui(self):
-        ttk.Label(self.frame, text=t("select_decrypt_file")).pack(anchor="w", pady=5)
-        self.decrypt_file_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.decrypt_file_var, width=50).pack(anchor="w", pady=2)
-        ttk.Button(self.frame, text=t("select_file"), command=lambda: self.select_single_file("decrypt")).pack(anchor="w", pady=5)
-        
-        ttk.Label(self.frame, text=t("input_password")).pack(anchor="w", pady=5)
-        self.decrypt_password_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.decrypt_password_var, show="*", width=50).pack(anchor="w", pady=2)
-        
-        ttk.Label(self.frame, text=t("output_path")).pack(anchor="w", pady=5)
-        self.decrypt_output_var = tk.StringVar(value="")
-        ttk.Entry(self.frame, textvariable=self.decrypt_output_var, width=50).pack(anchor="w", pady=2)
-        ttk.Button(self.frame, text=t("select_save_location"), command=lambda: self.select_output_path("decrypt")).pack(anchor="w", pady=5)
-    
     def select_files(self, func_type):
         files = filedialog.askopenfilenames(title=t("file_dialog_title"), filetypes=[("PDF files", "*.pdf")])
         if files:
@@ -441,16 +389,12 @@ class PDFToolbox:
                 self.extract_file_var.set(file)
             elif func_type == "rotate":
                 self.rotate_file_var.set(file)
-            elif func_type == "encrypt":
-                self.encrypt_file_var.set(file)
-            elif func_type == "decrypt":
-                self.decrypt_file_var.set(file)
             elif func_type == "text":
                 self.text_file_var.set(file)
     
     def select_output_path(self, func_type):
         defaults = {"merge": "merged.pdf", "extract": "extracted.pdf", "rotate": "rotated.pdf", 
-                    "encrypt": "encrypted.pdf", "decrypt": "decrypted.pdf", "text": "with_text.pdf"}
+                    "text": "with_text.pdf"}
         default_filename = defaults.get(func_type, "output.pdf")
         
         file = filedialog.asksaveasfilename(title=t("save_dialog_title"), defaultextension=".pdf", 
@@ -522,10 +466,6 @@ class PDFToolbox:
                 self.extract_pages()
             elif func_key == "func_rotate":
                 self.rotate_pages()
-            elif func_key == "func_encrypt":
-                self.encrypt_pdf()
-            elif func_key == "func_decrypt":
-                self.decrypt_pdf()
             elif func_key == "func_watermark":
                 self.add_text_to_pdf()
             self.status_var.set(t("status_success"))
@@ -678,44 +618,6 @@ class PDFToolbox:
         with open(output_path, "wb") as f:
             writer.write(f)
     
-    def encrypt_pdf(self):
-        input_path = self._validate_file(self.encrypt_file_var.get())
-        output_path = self._validate_output(self.encrypt_output_var.get())
-        password = self.encrypt_password_var.get()
-        
-        if not password:
-            raise Exception(t("err_set_password"))
-        if len(password) < 6:
-            raise Exception(t("err_password_length"))
-        
-        reader = PdfReader(input_path)
-        writer = PdfWriter()
-        
-        for page in reader.pages:
-            writer.add_page(page)
-            
-        writer.encrypt(password)
-        with open(output_path, "wb") as f:
-            writer.write(f)
-    
-    def decrypt_pdf(self):
-        input_path = self._validate_file(self.decrypt_file_var.get())
-        output_path = self._validate_output(self.decrypt_output_var.get())
-        password = self.decrypt_password_var.get()
-        
-        if not password:
-            raise Exception(t("err_input_password"))
-        
-        reader = PdfReader(input_path)
-        if reader.is_encrypted:
-            reader.decrypt(password)
-            
-        writer = PdfWriter()
-        for page in reader.pages:
-            writer.add_page(page)
-            
-        with open(output_path, "wb") as f:
-            writer.write(f)
 
 if __name__ == "__main__":
     load_lang()

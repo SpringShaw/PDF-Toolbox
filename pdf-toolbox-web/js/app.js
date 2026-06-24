@@ -346,85 +346,6 @@ async function rotatePages() {
     }
 }
 
-async function encryptPdf() {
-    const file = currentFiles.encrypt;
-    if (!file) {
-        showToast(t('selectFile'), 'error');
-        return;
-    }
-    
-    const password = document.getElementById('encryptPassword').value;
-    const confirm = document.getElementById('encryptPasswordConfirm').value;
-    
-    if (!password) {
-        showToast(t('passwordRequired'), 'error');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showToast(t('passwordMinLength'), 'error');
-        return;
-    }
-    
-    if (password !== confirm) {
-        showToast(t('passwordMismatch'), 'error');
-        return;
-    }
-    
-    const btn = document.getElementById('encryptBtn');
-    btn.disabled = true;
-    btn.textContent = t('processing');
-    
-    try {
-        const bytes = await readFile(file);
-        const doc = await PDFDocument.load(bytes);
-        
-        const pdfBytes = await doc.save();
-        downloadPdf(pdfBytes, 'encrypted.pdf');
-        showToast(t('downloadDone'));
-    } catch (e) {
-        console.error('Encrypt error:', e);
-        showToast(t('operationFailed'), 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = t('encryptBtn');
-    }
-}
-
-async function decryptPdf() {
-    const file = currentFiles.decrypt;
-    if (!file) {
-        showToast(t('selectFile'), 'error');
-        return;
-    }
-    
-    const password = document.getElementById('decryptPassword').value;
-    
-    if (!password) {
-        showToast(t('passwordRequired'), 'error');
-        return;
-    }
-    
-    const btn = document.getElementById('decryptBtn');
-    btn.disabled = true;
-    btn.textContent = t('processing');
-    
-    try {
-        const bytes = await readFile(file);
-        const doc = await PDFDocument.load(bytes);
-        
-        const pdfBytes = await doc.save();
-        downloadPdf(pdfBytes, 'decrypted.pdf');
-        showToast(t('downloadDone'));
-    } catch (e) {
-        console.error('Decrypt error:', e);
-        showToast(t('operationFailed'), 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = t('decryptBtn');
-    }
-}
-
 async function addWatermark() {
     const file = currentFiles.watermark;
     if (!file) {
@@ -539,8 +460,6 @@ function init() {
     setupUpload('splitFile', 'splitUpload');
     setupUpload('extractFile', 'extractUpload');
     setupUpload('rotateFile', 'rotateUpload');
-    setupUpload('encryptFile', 'encryptUpload');
-    setupUpload('decryptFile', 'decryptUpload');
     setupUpload('watermarkFile', 'watermarkUpload');
     
     document.getElementById('splitMode').addEventListener('change', (e) => {
@@ -551,8 +470,6 @@ function init() {
     document.getElementById('splitBtn').addEventListener('click', splitPdf);
     document.getElementById('extractBtn').addEventListener('click', extractPages);
     document.getElementById('rotateBtn').addEventListener('click', rotatePages);
-    document.getElementById('encryptBtn').addEventListener('click', encryptPdf);
-    document.getElementById('decryptBtn').addEventListener('click', decryptPdf);
     document.getElementById('watermarkBtn').addEventListener('click', addWatermark);
     
     document.getElementById('langBtn').addEventListener('click', switchLang);

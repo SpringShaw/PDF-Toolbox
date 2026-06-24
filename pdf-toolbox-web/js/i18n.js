@@ -6,15 +6,11 @@ const translations = {
         tabSplit: '拆分',
         tabExtract: '提取',
         tabRotate: '旋转',
-        tabEncrypt: '加密',
-        tabDecrypt: '解密',
         tabWatermark: '水印',
         mergeTitle: '合并 PDF',
         splitTitle: '拆分 PDF',
         extractTitle: '提取页面',
         rotateTitle: '旋转页面',
-        encryptTitle: '加密 PDF',
-        decryptTitle: '解密 PDF',
         watermarkTitle: '添加水印',
         uploadHint: '拖放文件到此处或 ',
         clickSelect: '点击选择',
@@ -22,8 +18,6 @@ const translations = {
         splitBtn: '开始拆分',
         extractBtn: '开始提取',
         rotateBtn: '开始旋转',
-        encryptBtn: '开始加密',
-        decryptBtn: '开始解密',
         watermarkBtn: '添加水印',
         splitMode: '拆分方式：',
         splitSingle: '每页拆分',
@@ -32,9 +26,6 @@ const translations = {
         extractPagesLabel: '页码范围（如：1,3-5）：',
         rotateAngle: '旋转角度：',
         rotatePagesLabel: '页码范围（留空则全部旋转）：',
-        encryptPassword: '设置密码：',
-        encryptPasswordConfirm: '确认密码：',
-        decryptPassword: '输入密码：',
         watermarkText: '水印文本：',
         watermarkSize: '字体大小：',
         watermarkAngle: '旋转角度：',
@@ -43,9 +34,6 @@ const translations = {
         error: '操作失败：',
         selectFile: '请先选择文件',
         selectOutput: '请选择输出路径',
-        passwordMismatch: '两次密码不一致',
-        passwordRequired: '请输入密码',
-        passwordMinLength: '密码长度至少6位',
         invalidPages: '页码格式无效',
         filesSelected: '已选择 {count} 个文件',
         fileSelected: '已选择文件',
@@ -62,15 +50,11 @@ const translations = {
         tabSplit: 'Split',
         tabExtract: 'Extract',
         tabRotate: 'Rotate',
-        tabEncrypt: 'Encrypt',
-        tabDecrypt: 'Decrypt',
         tabWatermark: 'Watermark',
         mergeTitle: 'Merge PDF',
         splitTitle: 'Split PDF',
         extractTitle: 'Extract Pages',
         rotateTitle: 'Rotate Pages',
-        encryptTitle: 'Encrypt PDF',
-        decryptTitle: 'Decrypt PDF',
         watermarkTitle: 'Add Watermark',
         uploadHint: 'Drag and drop files here or ',
         clickSelect: 'click to select',
@@ -78,8 +62,6 @@ const translations = {
         splitBtn: 'Split',
         extractBtn: 'Extract',
         rotateBtn: 'Rotate',
-        encryptBtn: 'Encrypt',
-        decryptBtn: 'Decrypt',
         watermarkBtn: 'Add Watermark',
         splitMode: 'Split mode:',
         splitSingle: 'Single page',
@@ -88,9 +70,6 @@ const translations = {
         extractPagesLabel: 'Page range (e.g. 1,3-5):',
         rotateAngle: 'Rotation angle:',
         rotatePagesLabel: 'Page range (empty for all):',
-        encryptPassword: 'Set password:',
-        encryptPasswordConfirm: 'Confirm password:',
-        decryptPassword: 'Enter password:',
         watermarkText: 'Watermark text:',
         watermarkSize: 'Font size:',
         watermarkAngle: 'Rotation angle:',
@@ -99,9 +78,6 @@ const translations = {
         error: 'Error: ',
         selectFile: 'Please select a file first',
         selectOutput: 'Please select output path',
-        passwordMismatch: 'Passwords do not match',
-        passwordRequired: 'Please enter password',
-        passwordMinLength: 'Password must be at least 6 characters',
         invalidPages: 'Invalid page format',
         filesSelected: '{count} file(s) selected',
         fileSelected: 'File selected',
@@ -149,7 +125,7 @@ function applyLang() {
     document.getElementById('langBtn').textContent = t('langBtn');
     
     const tabs = document.querySelectorAll('.tab');
-    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabEncrypt', 'tabDecrypt', 'tabWatermark'];
+    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabWatermark'];
     tabs.forEach((tab, i) => {
         tab.textContent = t(tabKeys[i]);
     });
@@ -159,8 +135,6 @@ function applyLang() {
         split: { title: 'splitTitle', btn: 'splitBtn' },
         extract: { title: 'extractTitle', btn: 'extractBtn' },
         rotate: { title: 'rotateTitle', btn: 'rotateBtn' },
-        encrypt: { title: 'encryptTitle', btn: 'encryptBtn' },
-        decrypt: { title: 'decryptTitle', btn: 'decryptBtn' },
         watermark: { title: 'watermarkTitle', btn: 'watermarkBtn' }
     };
     
