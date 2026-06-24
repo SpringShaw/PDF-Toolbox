@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; object-src 'self' blob:; frame-src 'self' blob:;">
+    <meta name="referrer" content="no-referrer">
     <title>PDF 工具箱</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -64,7 +66,7 @@
                 </div>
                 <div id="splitRangeGroup" class="form-group hidden">
                     <label>页码范围（如：1-3,5,7-10）：</label>
-                    <input type="text" id="splitRange" placeholder="1-3,5,7-10">
+                    <input type="text" id="splitRange" maxlength="100" placeholder="1-3,5,7-10">
                 </div>
                 <button id="splitBtn" class="btn primary" disabled>开始拆分</button>
             </section>
@@ -79,7 +81,7 @@
                 <div id="extractFileInfo" class="file-info"></div>
                 <div class="form-group">
                     <label>页码范围（如：1,3-5）：</label>
-                    <input type="text" id="extractPages" placeholder="1,3-5">
+                    <input type="text" id="extractPages" maxlength="100" placeholder="1,3-5">
                 </div>
                 <button id="extractBtn" class="btn primary" disabled>开始提取</button>
             </section>
@@ -172,7 +174,7 @@
             <section id="image" class="panel">
                 <h2>图片转 PDF</h2>
                 <div class="upload-area" id="imageUpload">
-                    <input type="file" id="imageFiles" multiple accept="image/*" hidden>
+                    <input type="file" id="imageFiles" multiple accept="image/png,image/jpeg,image/webp" hidden>
                     <p>拖放图片到此处或 <label for="imageFiles" class="link">点击选择</label></p>
                 </div>
                 <div id="imageFileList" class="file-list"></div>

@@ -115,7 +115,7 @@ const translations = {
     }
 };
 
-let currentLang = localStorage.getItem('pdf_toolbox_lang') || 'zh';
+let currentLang = 'zh';
 
 function getSystemLang() {
     const lang = navigator.language || navigator.userLanguage;
@@ -124,7 +124,7 @@ function getSystemLang() {
 
 function initLang() {
     const saved = localStorage.getItem('pdf_toolbox_lang');
-    if (saved) {
+    if (saved === 'zh' || saved === 'en') {
         currentLang = saved;
     } else {
         currentLang = getSystemLang();

@@ -53,14 +53,20 @@ function parsePages(str, total) {
     return Array.from(pages).sort((a, b) => a - b);
 }
 
-function setupUpload(inputId, containerId, multiple = false) {
+function setupUpload(inputId, containerId, multiple = false, acceptTypes = null) {
     const input = document.getElementById(inputId);
     const container = document.getElementById(containerId);
     
+    function filterFiles(files) {
+        return Array.from(files).filter(f => {
+            if (f.size > MAX_FILE_SIZE) return false;
+            if (!acceptTypes) return f.name.toLowerCase().endsWith('.pdf') && f.type === 'application/pdf';
+            return acceptTypes.includes(f.type);
+        });
+    }
+    
     container.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LABEL') {
-            e.preventDefault();
-        }
+        if (e.target.tagName === 'LABEL') e.preventDefault();
         input.click();
     });
     
@@ -76,15 +82,14 @@ function setupUpload(inputId, containerId, multiple = false) {
     container.addEventListener('drop', (e) => {
         e.preventDefault();
         container.classList.remove('dragover');
-        const files = Array.from(e.dataTransfer.files).filter(f => 
-            f.name.toLowerCase().endsWith('.pdf') && f.type === 'application/pdf'
-        );
+        const files = filterFiles(e.dataTransfer.files);
         if (files.length) handleFiles(inputId, files, multiple);
     });
     
     input.addEventListener('change', () => {
         if (input.files.length) {
-            handleFiles(inputId, Array.from(input.files), multiple);
+            const files = filterFiles(input.files);
+            if (files.length) handleFiles(inputId, files, multiple);
         }
     });
 }
@@ -241,10 +246,13 @@ async function splitPdf() {
                 const newDoc = await PDFDocument.create();
                 
                 if (range.includes('-')) {
-                    const [start, end] = range.split('-').map(s => parseInt(s.trim()) - 1);
-                    for (let i = start; i <= end && i < total; i++) {
-                        const [page] = await newDoc.copyPages(doc, [i]);
-                        newDoc.addPage(page);
+                    const parts = range.split('-').map(s => parseInt(s.trim()) - 1);
+                    const start = parts[0], end = parts[1];
+                    if (!isNaN(start) && !isNaN(end) && start >= 0) {
+                        for (let i = start; i <= end && i < total; i++) {
+                            const [page] = await newDoc.copyPages(doc, [i]);
+                            newDoc.addPage(page);
+                        }
                     }
                 } else {
                     const pageIdx = parseInt(range) - 1;
@@ -498,16 +506,28 @@ async function previewPdf() {
     
     const container = document.getElementById('previewContainer');
     
+    if (container._previewUrl) {
+        URL.revokeObjectURL(container._previewUrl);
+    }
+    
     try {
         const bytes = await readFile(file);
         const blob = new Blob([bytes], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
+        container._previewUrl = url;
         
-        const embedHeight = Math.max(400, window.innerHeight - 350);
-        container.innerHTML = '<embed src="' + url + '" type="application/pdf" width="100%" height="' + embedHeight + 'px" style="border:1px solid var(--border);border-radius:8px;">';
+        container.innerHTML = '';
+        const embed = document.createElement('embed');
+        embed.src = url;
+        embed.type = 'application/pdf';
+        embed.style.width = '100%';
+        embed.style.height = Math.max(400, window.innerHeight - 350) + 'px';
+        embed.style.border = '1px solid var(--border)';
+        embed.style.borderRadius = '8px';
+        container.appendChild(embed);
     } catch (e) {
         console.error('Preview error:', e);
-        container.innerHTML = '<p style="color:var(--error)">预览失败，请检查文件</p>';
+        container.innerHTML = '<p style="color:var(--error)">' + t('operationFailed') + '</p>';
     }
 }
 
@@ -567,7 +587,7 @@ async function compressPdf() {
     
     try {
         const bytes = await readFile(file);
-        const quality = parseFloat(document.getElementById('compressQuality').value);
+        const quality = Math.min(1, Math.max(0, parseFloat(document.getElementById('compressQuality').value) || 0.5));
         
         const pdfjsLib = window.pdfjsLib;
         const loadingTask = pdfjsLib.getDocument({ data: bytes });
@@ -622,7 +642,7 @@ function init() {
     setupUpload('splitFile', 'splitUpload');
     setupUpload('extractFile', 'extractUpload');
     setupUpload('rotateFile', 'rotateUpload');
-    setupUpload('imageFiles', 'imageUpload', true);
+    setupUpload('imageFiles', 'imageUpload', true, ['image/png', 'image/jpeg', 'image/webp']);
     setupUpload('deleteFile', 'deleteUpload');
     setupUpload('compressFile', 'compressUpload');
     setupUpload('watermarkFile', 'watermarkUpload');

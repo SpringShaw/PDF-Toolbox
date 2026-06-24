@@ -399,8 +399,8 @@ class PDFezyApp:
             return
 
         dpi = int(dpi_str)
-        if dpi <= 0:
-             messagebox.showwarning("警告", "DPI值必须大于0。")
+        if dpi <= 0 or dpi > 1200:
+             messagebox.showwarning("警告", "DPI值必须在1-1200之间。")
              return
 
         # 修复：移除了包含 .setpdfwrite 的参数，该参数在新版本Ghostscript中已不支持
@@ -429,7 +429,7 @@ class PDFezyApp:
         ]
 
         try:
-            result = subprocess.run(gs_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result = subprocess.run(gs_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=300)
             if result.returncode == 0:
                 if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
                     original_size = os.path.getsize(input_path)
