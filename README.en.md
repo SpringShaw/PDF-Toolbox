@@ -6,9 +6,8 @@ A **fully offline** PDF processing Web tool. No installation or deployment neede
 
 ## Preview
 
-<p align="center">
-  <img src="./README.en.assets/screenshot-en.png" alt="Interface Overview" style="zoom:33%;" />
-</p>
+<img src="README.en.assets/image-20260624210918003.png" alt="image-20260624210918003" style="zoom:50%;" />
+
 
 ## Features
 

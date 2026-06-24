@@ -6,9 +6,8 @@
 
 ## 界面预览
 
-<p align="center">
-  <img src="./README.assets/screenshot-zh.png" alt="界面总览" style="zoom:33%;" />
-</p>
+<img src="README.assets/image-20260624210852025.png" alt="image-20260624210852025" style="zoom:50%;" />
+
 
 ## 功能特性
 
