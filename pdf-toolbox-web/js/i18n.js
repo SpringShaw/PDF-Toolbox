@@ -6,11 +6,17 @@ const translations = {
         tabSplit: '拆分',
         tabExtract: '提取',
         tabRotate: '旋转',
+        tabImage: '图片转PDF',
+        tabDelete: '删除页面',
+        tabCompress: 'PDF压缩',
         tabWatermark: '水印',
         mergeTitle: '合并 PDF',
         splitTitle: '拆分 PDF',
         extractTitle: '提取页面',
         rotateTitle: '旋转页面',
+        imageTitle: '图片转 PDF',
+        deleteTitle: '删除页面',
+        compressTitle: 'PDF 压缩',
         watermarkTitle: '添加水印',
         uploadHint: '拖放文件到此处或 ',
         clickSelect: '点击选择',
@@ -18,6 +24,9 @@ const translations = {
         splitBtn: '开始拆分',
         extractBtn: '开始提取',
         rotateBtn: '开始旋转',
+        imageBtn: '开始转换',
+        deleteBtn: '删除页面',
+        compressBtn: '开始压缩',
         watermarkBtn: '添加水印',
         splitMode: '拆分方式：',
         splitSingle: '每页拆分',
@@ -26,6 +35,8 @@ const translations = {
         extractPagesLabel: '页码范围（如：1,3-5）：',
         rotateAngle: '旋转角度：',
         rotatePagesLabel: '页码范围（留空则全部旋转）：',
+        deletePagesHint: '请输入要删除的页码',
+        compressQuality: '压缩质量：',
         watermarkText: '水印文本：',
         watermarkSize: '字体大小：',
         watermarkAngle: '旋转角度：',
@@ -50,11 +61,17 @@ const translations = {
         tabSplit: 'Split',
         tabExtract: 'Extract',
         tabRotate: 'Rotate',
+        tabImage: 'Image to PDF',
+        tabDelete: 'Delete Pages',
+        tabCompress: 'Compress',
         tabWatermark: 'Watermark',
         mergeTitle: 'Merge PDF',
         splitTitle: 'Split PDF',
         extractTitle: 'Extract Pages',
         rotateTitle: 'Rotate Pages',
+        imageTitle: 'Image to PDF',
+        deleteTitle: 'Delete Pages',
+        compressTitle: 'Compress PDF',
         watermarkTitle: 'Add Watermark',
         uploadHint: 'Drag and drop files here or ',
         clickSelect: 'click to select',
@@ -62,6 +79,9 @@ const translations = {
         splitBtn: 'Split',
         extractBtn: 'Extract',
         rotateBtn: 'Rotate',
+        imageBtn: 'Convert',
+        deleteBtn: 'Delete',
+        compressBtn: 'Compress',
         watermarkBtn: 'Add Watermark',
         splitMode: 'Split mode:',
         splitSingle: 'Single page',
@@ -70,6 +90,8 @@ const translations = {
         extractPagesLabel: 'Page range (e.g. 1,3-5):',
         rotateAngle: 'Rotation angle:',
         rotatePagesLabel: 'Page range (empty for all):',
+        deletePagesHint: 'Please enter pages to delete',
+        compressQuality: 'Quality:',
         watermarkText: 'Watermark text:',
         watermarkSize: 'Font size:',
         watermarkAngle: 'Rotation angle:',
@@ -125,7 +147,7 @@ function applyLang() {
     document.getElementById('langBtn').textContent = t('langBtn');
     
     const tabs = document.querySelectorAll('.tab');
-    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabWatermark'];
+    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabImage', 'tabDelete', 'tabCompress', 'tabWatermark'];
     tabs.forEach((tab, i) => {
         tab.textContent = t(tabKeys[i]);
     });
@@ -135,6 +157,9 @@ function applyLang() {
         split: { title: 'splitTitle', btn: 'splitBtn' },
         extract: { title: 'extractTitle', btn: 'extractBtn' },
         rotate: { title: 'rotateTitle', btn: 'rotateBtn' },
+        image: { title: 'imageTitle', btn: 'imageBtn' },
+        delete: { title: 'deleteTitle', btn: 'deleteBtn' },
+        compress: { title: 'compressTitle', btn: 'compressBtn' },
         watermark: { title: 'watermarkTitle', btn: 'watermarkBtn' }
     };
     

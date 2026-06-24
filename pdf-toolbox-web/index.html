@@ -18,6 +18,9 @@
             <button class="tab" data-tab="split">拆分</button>
             <button class="tab" data-tab="extract">提取</button>
             <button class="tab" data-tab="rotate">旋转</button>
+            <button class="tab" data-tab="image">图片转PDF</button>
+            <button class="tab" data-tab="delete">删除页面</button>
+            <button class="tab" data-tab="compress">PDF压缩</button>
             <button class="tab" data-tab="watermark">水印</button>
         </nav>
 
@@ -91,6 +94,51 @@
                     <input type="text" id="rotatePages" placeholder="1-3,5">
                 </div>
                 <button id="rotateBtn" class="btn primary" disabled>开始旋转</button>
+            </section>
+
+            <!-- 图片转PDF -->
+            <section id="image" class="panel">
+                <h2>图片转 PDF</h2>
+                <div class="upload-area" id="imageUpload">
+                    <input type="file" id="imageFiles" multiple accept="image/*" hidden>
+                    <p>拖放图片到此处或 <label for="imageFiles" class="link">点击选择</label></p>
+                </div>
+                <div id="imageFileList" class="file-list"></div>
+                <button id="imageBtn" class="btn primary" disabled>开始转换</button>
+            </section>
+
+            <!-- 删除页面 -->
+            <section id="delete" class="panel">
+                <h2>删除页面</h2>
+                <div class="upload-area" id="deleteUpload">
+                    <input type="file" id="deleteFile" accept=".pdf" hidden>
+                    <p>拖放文件到此处或 <label for="deleteFile" class="link">点击选择</label></p>
+                </div>
+                <div id="deleteFileInfo" class="file-info"></div>
+                <div class="form-group">
+                    <label>要删除的页码（如：1,3-5）：</label>
+                    <input type="text" id="deletePages" placeholder="1,3-5">
+                </div>
+                <button id="deleteBtn" class="btn primary" disabled>删除页面</button>
+            </section>
+
+            <!-- PDF压缩 -->
+            <section id="compress" class="panel">
+                <h2>PDF 压缩</h2>
+                <div class="upload-area" id="compressUpload">
+                    <input type="file" id="compressFile" accept=".pdf" hidden>
+                    <p>拖放文件到此处或 <label for="compressFile" class="link">点击选择</label></p>
+                </div>
+                <div id="compressFileInfo" class="file-info"></div>
+                <div class="form-group">
+                    <label>压缩质量：</label>
+                    <select id="compressQuality">
+                        <option value="0.3">低质量（最小体积）</option>
+                        <option value="0.5" selected>中等质量</option>
+                        <option value="0.7">高质量（保留细节）</option>
+                    </select>
+                </div>
+                <button id="compressBtn" class="btn primary" disabled>开始压缩</button>
             </section>
 
             <!-- 水印 -->

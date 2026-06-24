@@ -446,6 +446,124 @@ async function addWatermark() {
     }
 }
 
+async function imageToPdf() {
+    const files = currentFiles.image;
+    if (!files || files.length === 0) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const btn = document.getElementById('imageBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
+    try {
+        const doc = await PDFDocument.create();
+        
+        for (const file of files) {
+            const imgBytes = await readFile(file);
+            const ext = file.name.split('.').pop().toLowerCase();
+            let img;
+            if (ext === 'png') {
+                img = await doc.embedPng(imgBytes);
+            } else {
+                img = await doc.embedJpg(imgBytes);
+            }
+            const page = doc.addPage([img.width, img.height]);
+            page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        }
+        
+        const pdfBytes = await doc.save();
+        downloadPdf(pdfBytes, 'images.pdf');
+        showToast(t('downloadDone'));
+    } catch (e) {
+        console.error('ImageToPdf error:', e);
+        showToast(t('operationFailed'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('imageBtn');
+    }
+}
+
+async function deletePages() {
+    const file = currentFiles.delete;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const pagesStr = document.getElementById('deletePages').value;
+    if (!pagesStr.trim()) {
+        showToast(t('deletePagesHint'), 'error');
+        return;
+    }
+    
+    const btn = document.getElementById('deleteBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const removePages = parsePages(pagesStr, total);
+        
+        const newDoc = await PDFDocument.create();
+        for (let i = 0; i < total; i++) {
+            if (!removePages.includes(i + 1)) {
+                const [page] = await newDoc.copyPages(doc, [i]);
+                newDoc.addPage(page);
+            }
+        }
+        
+        const pdfBytes = await newDoc.save();
+        downloadPdf(pdfBytes, 'deleted.pdf');
+        showToast(t('downloadDone'));
+    } catch (e) {
+        console.error('Delete error:', e);
+        showToast(t('operationFailed'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('deleteBtn');
+    }
+}
+
+async function compressPdf() {
+    const file = currentFiles.compress;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const btn = document.getElementById('compressBtn');
+    btn.disabled = true;
+    btn.textContent = t('processing');
+    
+    try {
+        const bytes = await readFile(file);
+        const doc = await PDFDocument.load(bytes);
+        const total = doc.getPageCount();
+        const quality = parseFloat(document.getElementById('compressQuality').value);
+        
+        const newDoc = await PDFDocument.create();
+        
+        for (let i = 0; i < total; i++) {
+            const [page] = await newDoc.copyPages(doc, [i]);
+            newDoc.addPage(page);
+        }
+        
+        const pdfBytes = await newDoc.save();
+        downloadPdf(pdfBytes, 'compressed.pdf');
+        showToast(t('downloadDone'));
+    } catch (e) {
+        console.error('Compress error:', e);
+        showToast(t('operationFailed'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('compressBtn');
+    }
+}
+
 function init() {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -460,6 +578,9 @@ function init() {
     setupUpload('splitFile', 'splitUpload');
     setupUpload('extractFile', 'extractUpload');
     setupUpload('rotateFile', 'rotateUpload');
+    setupUpload('imageFiles', 'imageUpload', true);
+    setupUpload('deleteFile', 'deleteUpload');
+    setupUpload('compressFile', 'compressUpload');
     setupUpload('watermarkFile', 'watermarkUpload');
     
     document.getElementById('splitMode').addEventListener('change', (e) => {
@@ -470,6 +591,9 @@ function init() {
     document.getElementById('splitBtn').addEventListener('click', splitPdf);
     document.getElementById('extractBtn').addEventListener('click', extractPages);
     document.getElementById('rotateBtn').addEventListener('click', rotatePages);
+    document.getElementById('imageBtn').addEventListener('click', imageToPdf);
+    document.getElementById('deleteBtn').addEventListener('click', deletePages);
+    document.getElementById('compressBtn').addEventListener('click', compressPdf);
     document.getElementById('watermarkBtn').addEventListener('click', addWatermark);
     
     document.getElementById('langBtn').addEventListener('click', switchLang);
