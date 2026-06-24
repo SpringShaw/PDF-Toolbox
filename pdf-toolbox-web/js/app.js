@@ -497,39 +497,13 @@ async function previewPdf() {
     }
     
     const container = document.getElementById('previewContainer');
-    container.innerHTML = '<div class="progress-bar"><div class="progress" style="width:0%"></div></div>';
     
     try {
         const bytes = await readFile(file);
-        const pdfjsLib = window.pdfjsLib;
-        const loadingTask = pdfjsLib.getDocument({ data: bytes });
-        const pdf = await loadingTask.promise;
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
         
-        container.innerHTML = '';
-        
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 0.5 });
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'preview-page';
-            
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            
-            wrapper.appendChild(canvas);
-            
-            const label = document.createElement('div');
-            label.className = 'page-label';
-            label.textContent = `第 ${i} 页`;
-            wrapper.appendChild(label);
-            
-            container.appendChild(wrapper);
-        }
+        container.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="600px">`;
     } catch (e) {
         console.error('Preview error:', e);
         container.innerHTML = '<p style="color:var(--error)">预览失败，请检查文件</p>';
@@ -592,18 +566,36 @@ async function compressPdf() {
     
     try {
         const bytes = await readFile(file);
-        const doc = await PDFDocument.load(bytes);
-        const total = doc.getPageCount();
         const quality = parseFloat(document.getElementById('compressQuality').value);
         
-        const newDoc = await PDFDocument.create();
+        const pdfjsLib = window.pdfjsLib;
+        const loadingTask = pdfjsLib.getDocument({ data: bytes });
+        const pdf = await loadingTask.promise;
+        const total = pdf.numPages;
         
-        for (let i = 0; i < total; i++) {
-            const [page] = await newDoc.copyPages(doc, [i]);
-            newDoc.addPage(page);
+        const doc = await PDFDocument.create();
+        
+        for (let i = 1; i <= total; i++) {
+            const page = await pdf.getPage(i);
+            const scale = quality < 0.4 ? 0.5 : quality < 0.6 ? 0.75 : 1;
+            const viewport = page.getViewport({ scale });
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            
+            const imgData = canvas.toDataURL('image/jpeg', quality);
+            const imgBytes = Uint8Array.from(atob(imgData.split(',')[1]), c => c.charCodeAt(0));
+            const img = await doc.embedJpg(imgBytes);
+            
+            const newPage = doc.addPage([img.width, img.height]);
+            newPage.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
         }
         
-        const pdfBytes = await newDoc.save();
+        const pdfBytes = await doc.save();
         downloadPdf(pdfBytes, 'compressed.pdf');
         showToast(t('downloadDone'));
     } catch (e) {

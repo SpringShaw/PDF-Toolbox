@@ -341,3 +341,7 @@ header h1 {
     color: var(--text-light);
     padding: 4px;
 }
+.preview-container embed {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
