@@ -503,7 +503,8 @@ async function previewPdf() {
         const blob = new Blob([bytes], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         
-        container.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="600px">`;
+        const embedHeight = Math.max(400, window.innerHeight - 350);
+        container.innerHTML = '<embed src="' + url + '" type="application/pdf" width="100%" height="' + embedHeight + 'px" style="border:1px solid var(--border);border-radius:8px;">';
     } catch (e) {
         console.error('Preview error:', e);
         container.innerHTML = '<p style="color:var(--error)">预览失败，请检查文件</p>';
@@ -577,7 +578,7 @@ async function compressPdf() {
         
         for (let i = 1; i <= total; i++) {
             const page = await pdf.getPage(i);
-            const scale = quality < 0.4 ? 0.5 : quality < 0.6 ? 0.75 : 1;
+            const scale = quality < 0.4 ? 0.75 : quality < 0.6 ? 1.5 : 2.0;
             const viewport = page.getViewport({ scale });
             
             const canvas = document.createElement('canvas');
