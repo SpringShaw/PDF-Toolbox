@@ -314,3 +314,30 @@ header h1 {
         padding: 30px 20px;
     }
 }
+
+.preview-container {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.preview-page {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    text-align: center;
+    padding: 4px;
+}
+
+.preview-page canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.preview-page .page-label {
+    font-size: 12px;
+    color: var(--text-light);
+    padding: 4px;
+}

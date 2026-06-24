@@ -1,7 +1,11 @@
-const { PDFDocument } = PDFLib;
+const { PDFDocument, degrees } = PDFLib;
 
 let currentFiles = {};
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
+if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+}
 
 function showToast(msg, type = 'success') {
     const toast = document.getElementById('toast');
@@ -485,6 +489,53 @@ async function imageToPdf() {
     }
 }
 
+async function previewPdf() {
+    const file = currentFiles.preview;
+    if (!file) {
+        showToast(t('selectFile'), 'error');
+        return;
+    }
+    
+    const container = document.getElementById('previewContainer');
+    container.innerHTML = '<div class="progress-bar"><div class="progress" style="width:0%"></div></div>';
+    
+    try {
+        const bytes = await readFile(file);
+        const pdfjsLib = window.pdfjsLib;
+        const loadingTask = pdfjsLib.getDocument({ data: bytes });
+        const pdf = await loadingTask.promise;
+        
+        container.innerHTML = '';
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 0.5 });
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-page';
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            
+            wrapper.appendChild(canvas);
+            
+            const label = document.createElement('div');
+            label.className = 'page-label';
+            label.textContent = `第 ${i} 页`;
+            wrapper.appendChild(label);
+            
+            container.appendChild(wrapper);
+        }
+    } catch (e) {
+        console.error('Preview error:', e);
+        container.innerHTML = '<p style="color:var(--error)">预览失败，请检查文件</p>';
+    }
+}
+
 async function deletePages() {
     const file = currentFiles.delete;
     if (!file) {
@@ -582,6 +633,16 @@ function init() {
     setupUpload('deleteFile', 'deleteUpload');
     setupUpload('compressFile', 'compressUpload');
     setupUpload('watermarkFile', 'watermarkUpload');
+    
+    const previewInput = document.getElementById('previewFile');
+    const previewContainer = document.getElementById('previewUpload');
+    previewContainer.addEventListener('click', (e) => { if (e.target.tagName === 'LABEL') e.preventDefault(); previewInput.click(); });
+    previewInput.addEventListener('change', () => {
+        if (previewInput.files.length) {
+            currentFiles.preview = previewInput.files[0];
+            previewPdf();
+        }
+    });
     
     document.getElementById('splitMode').addEventListener('change', (e) => {
         document.getElementById('splitRangeGroup').classList.toggle('hidden', e.target.value !== 'range');

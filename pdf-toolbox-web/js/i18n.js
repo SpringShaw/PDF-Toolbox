@@ -7,6 +7,7 @@ const translations = {
         tabExtract: '提取',
         tabRotate: '旋转',
         tabImage: '图片转PDF',
+        tabPreview: '预览',
         tabDelete: '删除页面',
         tabCompress: 'PDF压缩',
         tabWatermark: '水印',
@@ -15,6 +16,7 @@ const translations = {
         extractTitle: '提取页面',
         rotateTitle: '旋转页面',
         imageTitle: '图片转 PDF',
+        previewTitle: 'PDF 预览',
         deleteTitle: '删除页面',
         compressTitle: 'PDF 压缩',
         watermarkTitle: '添加水印',
@@ -62,6 +64,7 @@ const translations = {
         tabExtract: 'Extract',
         tabRotate: 'Rotate',
         tabImage: 'Image to PDF',
+        tabPreview: 'Preview',
         tabDelete: 'Delete Pages',
         tabCompress: 'Compress',
         tabWatermark: 'Watermark',
@@ -70,6 +73,7 @@ const translations = {
         extractTitle: 'Extract Pages',
         rotateTitle: 'Rotate Pages',
         imageTitle: 'Image to PDF',
+        previewTitle: 'PDF Preview',
         deleteTitle: 'Delete Pages',
         compressTitle: 'Compress PDF',
         watermarkTitle: 'Add Watermark',
@@ -147,7 +151,7 @@ function applyLang() {
     document.getElementById('langBtn').textContent = t('langBtn');
     
     const tabs = document.querySelectorAll('.tab');
-    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabImage', 'tabDelete', 'tabCompress', 'tabWatermark'];
+    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabImage', 'tabPreview', 'tabDelete', 'tabCompress', 'tabWatermark'];
     tabs.forEach((tab, i) => {
         tab.textContent = t(tabKeys[i]);
     });
@@ -158,6 +162,7 @@ function applyLang() {
         extract: { title: 'extractTitle', btn: 'extractBtn' },
         rotate: { title: 'rotateTitle', btn: 'rotateBtn' },
         image: { title: 'imageTitle', btn: 'imageBtn' },
+        preview: { title: 'previewTitle', btn: null },
         delete: { title: 'deleteTitle', btn: 'deleteBtn' },
         compress: { title: 'compressTitle', btn: 'compressBtn' },
         watermark: { title: 'watermarkTitle', btn: 'watermarkBtn' }
@@ -168,8 +173,10 @@ function applyLang() {
         if (panel) {
             const h2 = panel.querySelector('h2');
             if (h2) h2.textContent = t(panels[key].title);
-            const btn = panel.querySelector('.btn');
-            if (btn) btn.textContent = t(panels[key].btn);
+            if (panels[key].btn) {
+                const btn = panel.querySelector('.btn');
+                if (btn) btn.textContent = t(panels[key].btn);
+            }
         }
     });
     
