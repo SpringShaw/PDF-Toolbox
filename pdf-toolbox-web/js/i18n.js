@@ -151,7 +151,7 @@ function applyLang() {
     document.getElementById('langBtn').textContent = t('langBtn');
     
     const tabs = document.querySelectorAll('.tab');
-    const tabKeys = ['tabMerge', 'tabSplit', 'tabExtract', 'tabRotate', 'tabImage', 'tabPreview', 'tabDelete', 'tabCompress', 'tabWatermark'];
+    const tabKeys = ['tabMerge', 'tabSplit', 'tabCompress', 'tabImage', 'tabPreview', 'tabExtract', 'tabDelete', 'tabRotate', 'tabWatermark'];
     tabs.forEach((tab, i) => {
         tab.textContent = t(tabKeys[i]);
     });
