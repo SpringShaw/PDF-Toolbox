@@ -2,12 +2,11 @@
 
 [English](./README.en.md) | **简体中文**
 
-一个**完全离线**的 PDF 处理 Web 工具，无需安装、无需部署。集成 **PDF 预览、合并、拆分、提取、压缩、水印、删除页面、旋转、图片转PDF** 等常用功能，所有操作都在本地完成，保护隐私安全。
+> 一个**完全离线**的 PDF 处理 Web 工具，单文件即用、无需安装部署。集成 **PDF 预览、合并、拆分、提取、压缩、水印、删除页面、旋转、图片转 PDF** 等常用功能，所有操作均在浏览器本地完成，保护隐私安全。
 
 ## 界面预览
 
-<img src="README.assets/image-20260624210852025.png" alt="image-20260624210852025" style="zoom:50%;" />
-
+<img src="README.assets/image-20260624210852025.png" alt="PDF 工具箱界面预览" style="zoom:50%;" />
 
 ## 功能特性
 
@@ -43,6 +42,24 @@
 - 自定义水印文本、字体大小、颜色
 - 支持旋转角度和页码范围
 
+## 📦 项目结构
+
+```
+PDF-Toolbox/
+├── index.html              # 主页面，Tab 式功能切换
+├── css/
+│   └── style.css           # 全局样式（CSS 变量 + 响应式布局）
+├── js/
+│   ├── app.js              # 核心业务逻辑（9 大 PDF 功能）
+│   └── i18n.js             # 中英文双语模块
+├── README.md               # 中文文档
+├── README.en.md            # 英文文档
+├── README.assets/          # 中文截图
+├── README.en.assets/       # 英文截图
+├── LICENSE                 # MIT
+└── .gitignore
+```
+
 ## 使用方式
 
 直接用浏览器打开 `index.html` 即可，无需安装、无需部署、完全离线。
@@ -56,10 +73,12 @@ python -m http.server 8080
 
 ## 技术栈
 
-- **HTML5 + CSS3 + JavaScript** (原生，无框架依赖)
-- **pdf-lib** — PDF 创建与编辑
-- **pdf.js** — PDF 渲染与预览
-- **Canvas** — 图片降质压缩
+| 技术 | 用途 |
+|------|------|
+| HTML5 + CSS3 + JavaScript | 原生开发，无框架依赖 |
+| [pdf-lib](https://github.com/Hopding/pdf-lib) | PDF 创建与编辑 |
+| [pdf.js](https://github.com/mozilla/pdf.js) | PDF 渲染与预览 |
+| Canvas API | 图片降质压缩 |
 
 ## 注意事项
 
@@ -67,13 +86,14 @@ python -m http.server 8080
 - 建议使用 Chrome / Edge 最新版本以获得最佳体验
 - 压缩功能对扫描型 PDF 效果显著，文字型 PDF 建议使用后端方案
 
-## 版本历史
-
-查看 [VERSION.md](./VERSION.md) 了解详细更新记录。
-
 ## 特点
 
 - ✨ **完全离线**，无需联网
 - 🔒 **隐私安全**，文件不上传服务器
-- 🌐 **双端可用**，桌面版 + Web 版
-- 🌍 **中英文切换**，支持中英文界面
+- 🌍 **中英文切换**，自动检测浏览器语言
+- 📦 **单文件即用**，零依赖部署
+- 🆓 **MIT 开源协议**
+
+## 许可证
+
+[MIT License](LICENSE)

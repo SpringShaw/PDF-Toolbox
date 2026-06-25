@@ -2,12 +2,11 @@
 
 **English** | [简体中文](./README.md)
 
-A **fully offline** PDF processing Web tool. No installation or deployment needed. Integrates **PDF preview, merge, split, extract, compress, watermark, delete pages, rotate, image to PDF** and other common operations — all processed locally with no server uploads.
+> A **fully offline** PDF processing Web tool — single file, zero installation. Integrates **PDF preview, merge, split, extract, compress, watermark, delete pages, rotate, image-to-PDF** and more. All processing is done locally in the browser, keeping your files private and secure.
 
 ## Preview
 
-<img src="README.en.assets/image-20260624210918003.png" alt="image-20260624210918003" style="zoom:50%;" />
-
+<img src="README.en.assets/image-20260624210918003.png" alt="PDF Toolbox Preview" style="zoom:50%;" />
 
 ## Features
 
@@ -43,6 +42,24 @@ A **fully offline** PDF processing Web tool. No installation or deployment neede
 - Custom text, font size, and color
 - Supports rotation angle and page range
 
+## 📦 Project Structure
+
+```
+PDF-Toolbox/
+├── index.html              # Main page, tab-based feature switching
+├── css/
+│   └── style.css           # Global styles (CSS variables + responsive layout)
+├── js/
+│   ├── app.js              # Core business logic (9 PDF functions)
+│   └── i18n.js             # Chinese/English i18n module
+├── README.md               # Chinese documentation
+├── README.en.md            # English documentation
+├── README.assets/          # Chinese screenshots
+├── README.en.assets/       # English screenshots
+├── LICENSE                 # MIT
+└── .gitignore
+```
+
 ## Usage
 
 Open `index.html` in your browser — no installation or deployment needed.
@@ -56,10 +73,12 @@ python -m http.server 8080
 
 ## Tech Stack
 
-- **HTML5 + CSS3 + JavaScript** (vanilla, no framework)
-- **pdf-lib** — PDF creation and editing
-- **pdf.js** — PDF rendering and preview
-- **Canvas** — Image downsampling for compression
+| Technology | Purpose |
+|------------|---------|
+| HTML5 + CSS3 + JavaScript | Vanilla development, no framework |
+| [pdf-lib](https://github.com/Hopding/pdf-lib) | PDF creation and editing |
+| [pdf.js](https://github.com/mozilla/pdf.js) | PDF rendering and preview |
+| Canvas API | Image downsampling for compression |
 
 ## Notes
 
@@ -67,13 +86,14 @@ python -m http.server 8080
 - Chrome / Edge latest version recommended for the best experience
 - Compression works best on scanned/image-based PDFs
 
-## Changelog
-
-See [VERSION.md](./VERSION.md) for detailed release notes.
-
 ## Highlights
 
 - ✨ **Fully offline**, no internet required
 - 🔒 **Private & secure**, no server uploads
-- 🌐 **Dual platform**: Desktop + Web
-- 🌍 **Bilingual UI**: Chinese / English switchable
+- 🌍 **Bilingual UI**, auto-detects browser language
+- 📦 **Single file**, zero-dependency deployment
+- 🆓 **MIT licensed**
+
+## License
+
+[MIT License](LICENSE)
